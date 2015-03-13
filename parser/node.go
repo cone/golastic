@@ -1,6 +1,6 @@
-package core
+package parser
 
-type OperatorFunction func(re *Parser)
+type OperatorFunction func(re *Parser, o interface{})
 
 type Node struct {
 	Name       string

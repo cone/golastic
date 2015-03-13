@@ -1,4 +1,4 @@
-package core
+package parser
 
 import (
 	"strings"
@@ -8,15 +8,10 @@ const (
 	SEPARATOR = "_"
 )
 
-type ResultGenerator interface {
-	GetTree() *Node
-	Reset()
-	Finish()
-}
-
-func NewParser() *Parser {
+func NewParser(root *Node) *Parser {
 	return &Parser{
 		separator: SEPARATOR,
+		root:      root,
 	}
 }
 
@@ -26,10 +21,10 @@ type Parser struct {
 	separator       string
 	pos             int
 	param           *IncomingParam
-	resultgenerator ResultGenerator
+	root            *Node
 }
 
-func (this *Parser) Parse(input string, param interface{}) {
+func (this *Parser) Parse(input string, param, result interface{}) {
 	this.reset()
 
 	this.tokenize(input)
@@ -39,10 +34,10 @@ func (this *Parser) Parse(input string, param interface{}) {
 	for this.pos = 0; this.pos < len(this.toEvaluate); this.pos++ {
 		token := this.toEvaluate[this.pos]
 
-		if node, isCandidate := isCandidateToOperator(token); isCandidate {
+		if node, isCandidate := this.isCandidateToOperator(token); isCandidate {
 			if foundNode, found := this.find(node, this.pos); found {
 
-				foundNode.Apply(this)
+				foundNode.Apply(this, result)
 
 			} else {
 
@@ -55,8 +50,6 @@ func (this *Parser) Parse(input string, param interface{}) {
 
 		}
 	}
-
-	this.resultgenerator.Finish()
 }
 
 func (this *Parser) reset() {
@@ -112,15 +105,11 @@ func (this *Parser) evaluated(token string) {
 	this.evaluatedTokens = append(this.evaluatedTokens, token)
 }
 
-func isCandidateToOperator(item string) (*Node, bool) {
-	for _, node := range Tree.Nodes {
+func (this *Parser) isCandidateToOperator(item string) (*Node, bool) {
+	for _, node := range this.root.Nodes {
 		if node.Name == item {
 			return node, true
 		}
 	}
 	return &Node{}, false
-}
-
-func isLast(index int, slice []string) bool {
-	return index == (len(slice) - 1)
 }
