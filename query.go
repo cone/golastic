@@ -29,3 +29,20 @@ func (this *Query) From(from int) *Query {
 
 	return this
 }
+
+func (this *Query) Source(fields ...string) *Query {
+	this.outgoing["_source"] = fields
+
+	return this
+}
+
+func (this *Query) Sort(fields ...Field) *Query {
+
+	return this
+}
+
+type Field struct {
+	Name  string
+	Order string
+	Mode  string
+}
