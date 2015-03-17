@@ -4,47 +4,52 @@ import (
 	"encoding/json"
 )
 
-type Query map[string]map[string]interface{}
+const (
+	MATCH_QUERY         = "match"
+	MATCH_PHRASE        = "match_phrase"
+	MATCH_PHRASE_PREFIX = "match_phrase_prefix"
+)
 
-func (this *Query) Match(fields ...QueryField) *Query {
-	this.addField("match", fields)
-
-	return this
-}
-
-func (this *Query) MatchPhrase(fields ...QueryField) *Query {
-	this.addField("match_phrase", fields)
-
-	return this
-}
-
-func (this *Query) MatchPhrasePrefix(fields ...QueryField) *Query {
-	this.addField("match_phrase_prefix", fields)
-
-	return this
-}
-
-func (this *Query) addField(parent string, fields []QueryField) {
-	m := *this
-	m[parent] = map[string]interface{}{}
-
-	for _, field := range fields {
-		for key, value := range field {
-			m[parent][key] = value
-		}
+func NewQuery(t string) *Query {
+	return &Query{
+		queryType: t,
+		data:      map[string]interface{}{},
 	}
 }
 
-func (this *Query) MultiMatch(ops map[string]interface{}) *Query {
-	m := *this
+type Query struct {
+	queryType string
+	data      map[string]interface{}
+}
 
-	m["multi_match"] = ops
+func (this *Query) Size(size int) *Query {
+	this.data["size"] = size
+
+	return this
+}
+
+func (this *Query) From(from int) *Query {
+	this.data["from"] = from
+
+	return this
+}
+
+func (this *Query) Type(t string) *Query {
+	this.data["type"] = t
+
+	return this
+}
+
+func (this *Query) Fields(fields ...*Field) *Query {
+	for _, field := range fields {
+		this.data[this.queryType] = field.ToMap()
+	}
 
 	return this
 }
 
 func (this *Query) String() (string, error) {
-	queryBytes, err := json.Marshal(this)
+	queryBytes, err := json.Marshal(this.data)
 	if err != nil {
 		return "", err
 	}

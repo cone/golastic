@@ -5,9 +5,10 @@ import (
 )
 
 func TestQuery_Match(t *testing.T) {
-	q := &Query{}
 
-	got, err := q.Match(QueryField{"message": "this is a test"}).String()
+	got, err := NewQuery(MATCH_QUERY).Fields(
+		NewField("message").Query("this is a test"),
+	).String()
 	if err != nil {
 		t.Errorf("An error has ocurred: " + err.Error())
 		return
@@ -20,12 +21,10 @@ func TestQuery_Match(t *testing.T) {
 		return
 	}
 
-	got, err = q.Match(
-		QueryField{
-			"message": &QueryParams{
-				Query: "this is a test",
-			},
-		},
+	got, err = NewQuery(MATCH_QUERY).Fields(
+		NewField("message").Params(
+			NewParam().Query("this is a test"),
+		),
 	).String()
 	if err != nil {
 		t.Errorf("An error has ocurred: " + err.Error())
@@ -40,13 +39,3 @@ func TestQuery_Match(t *testing.T) {
 	}
 
 }
-
-//func TestQuery_MultiMatch(t *testing.T) {
-//q := &Query{}
-
-//_, err := q.MultiMatch("this is a test", []string{"subject", "message"}).String()
-//if err != nil {
-//t.Errorf("An error has ocurred: " + err.Error())
-//return
-//}
-//}
