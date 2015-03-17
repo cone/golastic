@@ -4,9 +4,9 @@ import (
 	"testing"
 )
 
-func TestQuery_Match(t *testing.T) {
+func TestPostQuery_Match(t *testing.T) {
 
-	got, err := NewQuery(MATCH_QUERY).Fields(
+	got, err := NewPostQuery(MATCH_QUERY).Fields(
 		NewField("message").Query("this is a test"),
 	).String()
 	if err != nil {
@@ -21,7 +21,7 @@ func TestQuery_Match(t *testing.T) {
 		return
 	}
 
-	got, err = NewQuery(MATCH_QUERY).Fields(
+	got, err = NewPostQuery(MATCH_QUERY).Fields(
 		NewField("message").Params(
 			NewParam().Query("this is a test"),
 		),

@@ -8,39 +8,40 @@ const (
 	MATCH_QUERY         = "match"
 	MATCH_PHRASE        = "match_phrase"
 	MATCH_PHRASE_PREFIX = "match_phrase_prefix"
+	MULTI_MATCH         = "multi_match"
 )
 
-func NewQuery(t string) *Query {
-	return &Query{
+func NewPostQuery(t string) *PostQuery {
+	return &PostQuery{
 		queryType: t,
 		data:      map[string]interface{}{},
 	}
 }
 
-type Query struct {
+type PostQuery struct {
 	queryType string
 	data      map[string]interface{}
 }
 
-func (this *Query) Size(size int) *Query {
+func (this *PostQuery) Size(size int) *PostQuery {
 	this.data["size"] = size
 
 	return this
 }
 
-func (this *Query) From(from int) *Query {
+func (this *PostQuery) From(from int) *PostQuery {
 	this.data["from"] = from
 
 	return this
 }
 
-func (this *Query) Type(t string) *Query {
+func (this *PostQuery) Type(t string) *PostQuery {
 	this.data["type"] = t
 
 	return this
 }
 
-func (this *Query) Fields(fields ...*Field) *Query {
+func (this *PostQuery) Fields(fields ...*Field) *PostQuery {
 	for _, field := range fields {
 		this.data[this.queryType] = field.ToMap()
 	}
@@ -48,7 +49,13 @@ func (this *Query) Fields(fields ...*Field) *Query {
 	return this
 }
 
-func (this *Query) String() (string, error) {
+func (this *PostQuery) Params(params *Params) *PostQuery {
+	this.data[this.queryType] = params.ToMap()
+
+	return this
+}
+
+func (this *PostQuery) String() (string, error) {
 	queryBytes, err := json.Marshal(this.data)
 	if err != nil {
 		return "", err

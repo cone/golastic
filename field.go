@@ -9,7 +9,7 @@ func NewField(name string) *Field {
 type Field struct {
 	Name        string
 	OutterQuery string
-	ParamSet    *FieldParams
+	ParamSet    *Params
 }
 
 func (this *Field) Query(query string) *Field {
@@ -18,7 +18,7 @@ func (this *Field) Query(query string) *Field {
 	return this
 }
 
-func (this *Field) Params(params *FieldParams) *Field {
+func (this *Field) Params(params *Params) *Field {
 	this.ParamSet = params
 
 	return this
