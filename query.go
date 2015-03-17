@@ -1,48 +1,53 @@
 package golastic
 
-func NewQuery() *Query {
-	return &Query{
-		outgoing: map[string]interface{}{
-			"query": struct{}{},
-		},
+import (
+	"encoding/json"
+)
+
+type Query map[string]map[string]interface{}
+
+func (this *Query) Match(fields ...QueryField) *Query {
+	this.addField("match", fields)
+
+	return this
+}
+
+func (this *Query) MatchPhrase(fields ...QueryField) *Query {
+	this.addField("match_phrase", fields)
+
+	return this
+}
+
+func (this *Query) MatchPhrasePrefix(fields ...QueryField) *Query {
+	this.addField("match_phrase_prefix", fields)
+
+	return this
+}
+
+func (this *Query) addField(parent string, fields []QueryField) {
+	m := *this
+	m[parent] = map[string]interface{}{}
+
+	for _, field := range fields {
+		for key, value := range field {
+			m[parent][key] = value
+		}
 	}
 }
 
-type Query struct {
-	outgoing map[string]interface{}
+func (this *Query) MultiMatch(ops map[string]interface{}) *Query {
+	m := *this
+
+	m["multi_match"] = ops
+
+	return this
 }
 
-func (this *Query) All() {
-	this.outgoing["query"] = map[string]interface{}{
-		"match_all": struct{}{},
+func (this *Query) String() (string, error) {
+	queryBytes, err := json.Marshal(this)
+	if err != nil {
+		return "", err
 	}
-}
 
-func (this *Query) Size(size int) *Query {
-	this.outgoing["size"] = size
-
-	return this
-}
-
-func (this *Query) From(from int) *Query {
-	this.outgoing["from"] = from
-
-	return this
-}
-
-func (this *Query) Source(fields ...string) *Query {
-	this.outgoing["_source"] = fields
-
-	return this
-}
-
-func (this *Query) Sort(fields ...Field) *Query {
-
-	return this
-}
-
-type Field struct {
-	Name  string
-	Order string
-	Mode  string
+	return string(queryBytes), nil
 }
