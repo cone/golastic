@@ -55,6 +55,10 @@ func (this *PostQuery) Params(params *Params) *PostQuery {
 	return this
 }
 
+func (this *PostQuery) Bytes() ([]byte, error) {
+	return json.Marshal(this.data)
+}
+
 func (this *PostQuery) String() (string, error) {
 	queryBytes, err := json.Marshal(this.data)
 	if err != nil {
