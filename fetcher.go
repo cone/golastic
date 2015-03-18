@@ -1,8 +1,12 @@
 package golastic
 
 import (
-	//"bytes"
-	//"net/http"
+	"bytes"
+	"encoding/json"
+	"errors"
+	"io/ioutil"
+	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -15,7 +19,6 @@ func NewFetcher(serverUrl string) *Fetcher {
 type Fetcher struct {
 	ServerUrl string
 	index     string
-	query     *PostQuery
 	_type     string
 }
 
@@ -31,32 +34,89 @@ func (this *Fetcher) Type(t string) *Fetcher {
 	return this
 }
 
-func (this *Fetcher) Query(query *PostQuery) *Fetcher {
-	this.query = query
+func (this *Fetcher) Query(query *PostQuery) (*Result, error) {
+	queryBytes, err := query.Bytes()
+	if err != nil {
+		return nil, err
+	}
 
-	return this
+	url := this.getUrl() + "/_search"
+
+	responseBytes, err := this.doRequest("POST", url, bytes.NewBuffer(queryBytes))
+	if err != nil {
+		return nil, err
+	}
+
+	result := &Result{}
+
+	err = json.Unmarshal(responseBytes, result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
-//func (this *Fetcher) Find(id int) (interface{}, error) {
+func (this *Fetcher) Find(id int) (*Result, error) {
+	url := this.getUrl() + "/" + strconv.Itoa(id)
 
-//}
+	responseBytes, err := this.doRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
 
-//func (this *Fetcher) Result(query *PostQuery) (interface{}, error) {
-//queryBytes, err := query.Bytes()
-//if err != nil {
-//return struct{}{}, err
-//}
+	result := &Result{}
 
-//req, err := http.NewRequest("POST", this.getUrl(), bytes.NewBuffer(queryBytes))
-//if err != nil {
-//return struct{}{}, err
-//}
+	err = json.Unmarshal(responseBytes, result)
+	if err != nil {
+		return nil, err
+	}
 
-//return struct{}{}, nil
-//}
+	return result, nil
+}
+
+func (this *Fetcher) doRequest(method, url string, buffer *bytes.Buffer) ([]byte, error) {
+	req, err := http.NewRequest(method, url, buffer)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	client := http.Client{}
+
+	res, err := client.Do(req)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	resBytes, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	if ErrorResult, thereIsError := this.checkIfError(resBytes); thereIsError {
+		return []byte{}, errors.New(ErrorResult.Error)
+	}
+
+	return resBytes, nil
+}
+
+func (this *Fetcher) checkIfError(jsonBytes []byte) (*ErrorResult, bool) {
+	errorResult := &ErrorResult{}
+
+	err := json.Unmarshal(jsonBytes, errorResult)
+	if err != nil {
+		return nil, false
+	}
+
+	return errorResult, true
+}
 
 func (this *Fetcher) getUrl() string {
-	url := this.ServerUrl + "/" + this.index
+	var url string
+
+	if strings.Trim(this.index, " ") != "" {
+		url = this.ServerUrl + "/" + this.index
+	}
 
 	if strings.Trim(this._type, " ") != "" {
 		url = url + "/" + this._type
