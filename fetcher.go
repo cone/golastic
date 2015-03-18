@@ -1,8 +1,10 @@
 package golastic
 
-//import (
-//"net/http"
-//)
+import (
+	//"bytes"
+	//"net/http"
+	"strings"
+)
 
 func NewFetcher(serverUrl string) *Fetcher {
 	return &Fetcher{
@@ -35,11 +37,30 @@ func (this *Fetcher) Query(query *PostQuery) *Fetcher {
 	return this
 }
 
+//func (this *Fetcher) Find(id int) (interface{}, error) {
+
+//}
+
 //func (this *Fetcher) Result(query *PostQuery) (interface{}, error) {
 //queryBytes, err := query.Bytes()
 //if err != nil {
 //return struct{}{}, err
 //}
 
+//req, err := http.NewRequest("POST", this.getUrl(), bytes.NewBuffer(queryBytes))
+//if err != nil {
+//return struct{}{}, err
+//}
+
 //return struct{}{}, nil
 //}
+
+func (this *Fetcher) getUrl() string {
+	url := this.ServerUrl + "/" + this.index
+
+	if strings.Trim(this._type, " ") != "" {
+		url = url + "/" + this._type
+	}
+
+	return url
+}
