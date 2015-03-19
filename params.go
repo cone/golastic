@@ -41,14 +41,3 @@ func (this *Params) ZeroTermsQuery(value string) *Params {
 
 	return this
 }
-
-func (this *Params) Fields(fields ...string) *Params {
-	m := *this
-	m["fields"] = fields
-
-	return this
-}
-
-func (this *Params) ToMap() *Params {
-	return this
-}

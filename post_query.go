@@ -48,7 +48,7 @@ func (this *PostQuery) Element(key string, value interface{}) *PostQuery {
 }
 
 func (this *PostQuery) Params(params *Params) *PostQuery {
-	this.data[this.queryType] = params.ToMap()
+	this.data[this.queryType] = params
 
 	return this
 }

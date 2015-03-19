@@ -19,11 +19,9 @@ func TestPostQuery_Match(t *testing.T) {
 		return
 	}
 
-	p := Params{}
-
 	got, err = NewPostQuery(MATCH_QUERY).Element(
 		"message",
-		p.Query("this is a test"),
+		map[string]string{"query": "this is a test"},
 	).String()
 	if err != nil {
 		t.Errorf("An error has ocurred: " + err.Error())
