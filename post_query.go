@@ -41,10 +41,8 @@ func (this *PostQuery) Type(t string) *PostQuery {
 	return this
 }
 
-func (this *PostQuery) Fields(fields ...*Field) *PostQuery {
-	for _, field := range fields {
-		this.data[this.queryType] = field.ToMap()
-	}
+func (this *PostQuery) Element(key string, value interface{}) *PostQuery {
+	this.data[this.queryType] = map[string]interface{}{key: value}
 
 	return this
 }

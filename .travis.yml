@@ -6,6 +6,3 @@ branches:
 
 services:
   - elasticsearch
-
-before_script:
-  - curl -XPOST '127.0.0.1:9200/test/products/_bulk?pretty' --data-binary @testdata/p.json

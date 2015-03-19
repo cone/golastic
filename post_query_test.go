@@ -6,9 +6,7 @@ import (
 
 func TestPostQuery_Match(t *testing.T) {
 
-	got, err := NewPostQuery(MATCH_QUERY).Fields(
-		NewField("message").Query("this is a test"),
-	).String()
+	got, err := NewPostQuery(MATCH_QUERY).Element("message", "this is a test").String()
 	if err != nil {
 		t.Errorf("An error has ocurred: " + err.Error())
 		return
@@ -21,10 +19,11 @@ func TestPostQuery_Match(t *testing.T) {
 		return
 	}
 
-	got, err = NewPostQuery(MATCH_QUERY).Fields(
-		NewField("message").Params(
-			NewParam().Query("this is a test"),
-		),
+	p := Params{}
+
+	got, err = NewPostQuery(MATCH_QUERY).Element(
+		"message",
+		p.Query("this is a test"),
 	).String()
 	if err != nil {
 		t.Errorf("An error has ocurred: " + err.Error())

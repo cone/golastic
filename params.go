@@ -5,46 +5,43 @@ const (
 	TYPE_PHRASE_PREFIX   = "phrase_prefix"
 )
 
-func NewParam() *Params {
-	return &Params{
-		data: map[string]interface{}{},
-	}
-}
-
-type Params struct {
-	data map[string]interface{}
-}
+type Params map[string]interface{}
 
 func (this *Params) Analyzer(value string) *Params {
-	this.data["analyzer"] = value
+	m := *this
+	m["analyzer"] = value
 
 	return this
 }
 
 func (this *Params) CutoffFrequency(value float64) *Params {
-	this.data["cutoff_frequency"] = value
+	m := *this
+	m["cutoff_frequency"] = value
 
 	return this
 }
 
 func (this *Params) Query(value string) *Params {
-	this.data["query"] = value
+	m := *this
+	m["query"] = value
 
 	return this
 }
 
 func (this *Params) Type(value string) *Params {
-	this.data["type"] = value
+	m := *this
+	m["type"] = value
 
 	return this
 }
 
 func (this *Params) ZeroTermsQuery(value string) *Params {
-	this.data["zero_terms_query"] = value
+	m := *this
+	m["zero_terms_query"] = value
 
 	return this
 }
 
-func (this *Params) ToMap() map[string]interface{} {
-	return this.data
+func (this *Params) ToMap() *Params {
+	return this
 }
