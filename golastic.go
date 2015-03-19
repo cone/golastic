@@ -1,6 +1,6 @@
 package golastic
 
-func Connect(serverUrl string) *Golastic {
+func New(serverUrl string) *Golastic {
 	return &Golastic{
 		fetcher: NewFetcher(serverUrl),
 	}

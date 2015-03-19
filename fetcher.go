@@ -22,6 +22,13 @@ type Fetcher struct {
 	_type     string
 }
 
+func (this *Fetcher) From(index, t string) *Fetcher {
+	this.index = index
+	this._type = t
+
+	return this
+}
+
 func (this *Fetcher) Index(index string) *Fetcher {
 	this.index = index
 
@@ -42,7 +49,12 @@ func (this *Fetcher) Query(query *PostQuery) (*Result, error) {
 
 	url := this.getUrl() + "/_search"
 
-	responseBytes, err := this.doRequest("POST", url, bytes.NewBuffer(queryBytes))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(queryBytes))
+	if err != nil {
+		return nil, err
+	}
+
+	responseBytes, err := this.getResponse(req)
 	if err != nil {
 		return nil, err
 	}
@@ -57,15 +69,20 @@ func (this *Fetcher) Query(query *PostQuery) (*Result, error) {
 	return result, nil
 }
 
-func (this *Fetcher) Find(id int) (*Result, error) {
+func (this *Fetcher) Find(id int) (*ResultItem, error) {
 	url := this.getUrl() + "/" + strconv.Itoa(id)
 
-	responseBytes, err := this.doRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	result := &Result{}
+	responseBytes, err := this.getResponse(req)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &ResultItem{}
 
 	err = json.Unmarshal(responseBytes, result)
 	if err != nil {
@@ -75,12 +92,7 @@ func (this *Fetcher) Find(id int) (*Result, error) {
 	return result, nil
 }
 
-func (this *Fetcher) doRequest(method, url string, buffer *bytes.Buffer) ([]byte, error) {
-	req, err := http.NewRequest(method, url, buffer)
-	if err != nil {
-		return []byte{}, err
-	}
-
+func (this *Fetcher) getResponse(req *http.Request) ([]byte, error) {
 	client := http.Client{}
 
 	res, err := client.Do(req)
@@ -94,7 +106,9 @@ func (this *Fetcher) doRequest(method, url string, buffer *bytes.Buffer) ([]byte
 	}
 
 	if ErrorResult, thereIsError := this.checkIfError(resBytes); thereIsError {
-		return []byte{}, errors.New(ErrorResult.Error)
+		if ErrorResult.Error != "" {
+			return []byte{}, errors.New(ErrorResult.Error)
+		}
 	}
 
 	return resBytes, nil
