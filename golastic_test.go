@@ -15,6 +15,4 @@ func TestGolastic(t *testing.T) {
 	AssertEqualString(t, resultItem.Index, "test")
 	AssertEqualString(t, resultItem.Type, "products")
 	AssertEqualString(t, resultItem.Id, "1")
-	AssertEqualInt(t, resultItem.Version, 1)
-	AssertEqualBool(t, resultItem.Found, true)
 }
