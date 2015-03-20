@@ -9,3 +9,6 @@ services:
 
 before_script:
   - sleep 10
+  - curl -XPOST 'http://localhost:9200/test'
+  - sleep 2
+  - curl -XPOST 'http://localhost:9200/test/product/_bulk?pretty' --data-binary @testdata/p.json
