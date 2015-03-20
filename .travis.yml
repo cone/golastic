@@ -6,3 +6,6 @@ branches:
 
 services:
   - elasticsearch
+
+before_script:
+  - sleep 10
