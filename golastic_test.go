@@ -5,7 +5,7 @@ import (
 )
 
 func TestGolastic(t *testing.T) {
-	golastic := New("http://localhost:9200")
+	golastic := New("https://localhost:9200")
 
 	resultItem, err := golastic.Fetcher().From("test", "products").Find(1)
 	if err != nil {
