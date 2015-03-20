@@ -26,6 +26,10 @@ func AssertEqualBool(t *testing.T, a, b bool) {
 	}
 }
 
+func Error(t *testing.T, err error) {
+	t.Error("An error has ocurred: " + err.Error())
+}
+
 func mismatchError(t *testing.T, a, b interface{}) {
 	t.Errorf("Mismatch.\n%s is not equal to %s\n", a, b)
 }
