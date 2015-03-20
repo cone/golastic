@@ -41,7 +41,7 @@ func (this *Fetcher) Type(t string) *Fetcher {
 	return this
 }
 
-func (this *Fetcher) Query(query *PostQuery) (*Result, error) {
+func (this *Fetcher) Query(query Marshalable) (*Result, error) {
 	queryBytes, err := query.Bytes()
 	if err != nil {
 		return nil, err
