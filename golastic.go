@@ -14,6 +14,7 @@ func New(serverUrl string) (*Golastic, error) {
 
 	return &Golastic{
 		Reader:  NewReader(i),
+		Writer:  NewWriter(i),
 		BaseUrl: baseUrl,
 	}, nil
 }
@@ -21,8 +22,8 @@ func New(serverUrl string) (*Golastic, error) {
 type Golastic struct {
 	BaseUrl *url.URL
 	*Reader
-	interactor *Interactor
-	index      string
+	*Writer
+	index string
 }
 
 func (this *Golastic) From(index, t string) *Golastic {
@@ -46,4 +47,5 @@ func (this *Golastic) Type(t string) *Golastic {
 
 func (this *Golastic) completeUrl(urlTail string) {
 	this.Reader.url = this.BaseUrl.String() + "/" + urlTail
+	this.Writer.url = this.BaseUrl.String() + "/" + urlTail
 }

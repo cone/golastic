@@ -23,16 +23,40 @@ func NewWriter(requester Requester) *Writer {
 
 type Writer struct {
 	requester Requester
-	index     string
-	_type     string
+	url       string
 	errors    []error
 }
 
-func (this *Writer) From(index, t string) *Writer {
-	this.index = index
-	this._type = t
+func (this *Writer) Index(param interface{}) ([]byte, error) {
+	paramBytes, err := json.Marshal(param)
+	if err != nil {
+		return []byte{}, err
+	}
 
-	return this
+	return this.requester.Put(this.url, paramBytes)
+}
+
+func (this *Writer) Update(id string, param interface{}) ([]byte, error) {
+	paramBytes, err := json.Marshal(param)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	urlStr := this.url + "/" + id
+
+	return this.requester.Put(urlStr, paramBytes)
+}
+
+func (this *Writer) Delete(id string) ([]byte, error) {
+	var urlStr string
+
+	if id != "" {
+		urlStr = this.url + "/" + id
+	} else {
+		urlStr = this.url
+	}
+
+	return this.requester.Delete(urlStr)
 }
 
 func (this *Writer) Bulk(action string, param interface{}) []byte {

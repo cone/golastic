@@ -32,7 +32,9 @@ func (this *Reader) Exec(query Marshalable) (*Result, error) {
 }
 
 func (this *Reader) Find(id string) (*ResultItem, error) {
-	responseBytes, err := this.requester.Get(this.url, id)
+	urlStr := this.url + "/" + id
+
+	responseBytes, err := this.requester.Get(urlStr)
 	if err != nil {
 		return nil, err
 	}

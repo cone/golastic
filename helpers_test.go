@@ -49,10 +49,18 @@ func (this *FakeRequester) Post(url string, b []byte) ([]byte, error) {
 	return this.PostResponse, nil
 }
 
-func (this *FakeRequester) Get(url, id string) ([]byte, error) {
+func (this *FakeRequester) Get(url string) ([]byte, error) {
 	if this.GetError != nil {
 		return []byte{}, this.GetError
 	}
 
 	return this.GetResponse, nil
+}
+
+func (this *FakeRequester) Put(url string, b []byte) ([]byte, error) {
+	return []byte{}, nil
+}
+
+func (this *FakeRequester) Delete(url string) ([]byte, error) {
+	return []byte{}, nil
 }

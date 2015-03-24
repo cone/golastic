@@ -17,7 +17,15 @@ type Interactor struct {
 }
 
 func (this *Interactor) Post(url string, body []byte) ([]byte, error) {
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
+	return this.withBody("POST", url, body)
+}
+
+func (this *Interactor) Put(url string, body []byte) ([]byte, error) {
+	return this.withBody("PUT", url, body)
+}
+
+func (this *Interactor) withBody(method, url string, body []byte) ([]byte, error) {
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err
 	}
@@ -25,10 +33,16 @@ func (this *Interactor) Post(url string, body []byte) ([]byte, error) {
 	return this.getResponse(req)
 }
 
-func (this *Interactor) Get(url string, id string) ([]byte, error) {
-	url = url + "/" + id
+func (this *Interactor) Get(url string) ([]byte, error) {
+	return this.withoutBody("GET", url)
+}
 
-	req, err := http.NewRequest("GET", url, nil)
+func (this *Interactor) Delete(url string) ([]byte, error) {
+	return this.withoutBody("DELETE", url)
+}
+
+func (this *Interactor) withoutBody(method, url string) ([]byte, error) {
+	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
 		return nil, err
 	}
