@@ -7,4 +7,5 @@ type ResultItem struct {
 	Version int         `json:"_version"`
 	Found   bool        `json:"found"`
 	Source  interface{} `json:"_source"`
+	Created bool        `json:"created"`
 }

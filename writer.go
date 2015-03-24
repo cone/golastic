@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
-	"strings"
 )
 
 const (
@@ -16,27 +15,27 @@ const (
 	UPDATE_ACTION = "update"
 )
 
-func NewApi(serverUrl string) *Api {
-	return &Api{
-		ServerUrl: serverUrl,
+func NewWriter(requester Requester) *Writer {
+	return &Writer{
+		requester: requester,
 	}
 }
 
-type Api struct {
-	ServerUrl string
+type Writer struct {
+	requester Requester
 	index     string
 	_type     string
 	errors    []error
 }
 
-func (this *Api) From(index, t string) *Api {
+func (this *Writer) From(index, t string) *Writer {
 	this.index = index
 	this._type = t
 
 	return this
 }
 
-func (this *Api) Bulk(action string, param interface{}) []byte {
+func (this *Writer) Bulk(action string, param interface{}) []byte {
 	v := reflect.ValueOf(param)
 	k := v.Kind()
 	var b []byte
@@ -55,7 +54,7 @@ func (this *Api) Bulk(action string, param interface{}) []byte {
 	return b
 }
 
-func (this *Api) processBulk(action string, v reflect.Value, param interface{}) []byte {
+func (this *Writer) processBulk(action string, v reflect.Value, param interface{}) []byte {
 	buffer := bytes.Buffer{}
 
 	for i := 0; i < v.Len(); i++ {
@@ -70,7 +69,7 @@ func (this *Api) processBulk(action string, v reflect.Value, param interface{}) 
 	return buffer.Bytes()
 }
 
-func (this *Api) processItem(action string, param interface{}) ([]byte, error) {
+func (this *Writer) processItem(action string, param interface{}) ([]byte, error) {
 	id := uuid.New()
 
 	buffer := bytes.Buffer{}
@@ -86,18 +85,4 @@ func (this *Api) processItem(action string, param interface{}) ([]byte, error) {
 	buffer.WriteRune('\n')
 
 	return buffer.Bytes(), nil
-}
-
-func (this *Api) getUrl() string {
-	var url string
-
-	if strings.Trim(this.index, " ") != "" {
-		url = this.ServerUrl + "/" + this.index
-	}
-
-	if strings.Trim(this._type, " ") != "" {
-		url = url + "/" + this._type
-	}
-
-	return url
 }

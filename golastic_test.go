@@ -5,9 +5,12 @@ import (
 )
 
 func TestGolastic(t *testing.T) {
-	golastic := New("http://localhost:9200")
+	golastic, err := New("http://localhost:9200")
+	if err != nil {
+		Error(t, err)
+	}
 
-	resultItem, err := golastic.Fetcher().From("test", "products").Find(1)
+	resultItem, err := golastic.From("test", "products").Find("1")
 	if err != nil {
 		t.Error("An error has ocurred: " + err.Error())
 	}

@@ -4,8 +4,10 @@ import (
 	"testing"
 )
 
-func TestApi(t *testing.T) {
-	i := NewApi("")
+func TestWriter(t *testing.T) {
+	requester := &FakeRequester{}
+
+	i := NewWriter(requester)
 
 	params := []interface{}{
 		[]string{"Hello"},
@@ -25,8 +27,10 @@ func TestApi(t *testing.T) {
 
 }
 
-func TestApi_getItem(t *testing.T) {
-	i := NewApi("")
+func TestWriter_getItem(t *testing.T) {
+	requester := &FakeRequester{}
+
+	i := NewWriter(requester)
 
 	result, err := i.processItem(INDEX_ACTION, []string{"Hello", "World"})
 	if err != nil {

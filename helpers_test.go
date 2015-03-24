@@ -33,3 +33,26 @@ func Error(t *testing.T, err error) {
 func mismatchError(t *testing.T, a, b interface{}) {
 	t.Errorf("Mismatch.\n%s is not equal to %s\n", a, b)
 }
+
+type FakeRequester struct {
+	GetResponse  []byte
+	PostResponse []byte
+	GetError     error
+	PostError    error
+}
+
+func (this *FakeRequester) Post(url string, b []byte) ([]byte, error) {
+	if this.PostError != nil {
+		return []byte{}, this.PostError
+	}
+
+	return this.PostResponse, nil
+}
+
+func (this *FakeRequester) Get(url, id string) ([]byte, error) {
+	if this.GetError != nil {
+		return []byte{}, this.GetError
+	}
+
+	return this.GetResponse, nil
+}
