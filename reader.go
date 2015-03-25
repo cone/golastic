@@ -15,8 +15,8 @@ type Reader struct {
 	url       string
 }
 
-func (this *Reader) Exec(query Marshalable) (*Result, error) {
-	queryBytes, err := query.Bytes()
+func (this *Reader) Exec(query *QueryData) (*Result, error) {
+	queryBytes, err := json.Marshal(query)
 	if err != nil {
 		return nil, err
 	}

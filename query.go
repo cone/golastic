@@ -1,34 +1,49 @@
 package golastic
 
-func Query(t string, item interface{}) *ItemData {
-	return &ItemData{
-		t: item,
+import "encoding/json"
+
+func Query(t string) *QueryData {
+	return &QueryData{
+		_type:      t,
+		_outerData: map[string]interface{}{},
+		_innerData: struct{}{},
 	}
 }
 
-type QueryData ItemData
+type QueryData struct {
+	_type      string
+	_outerData map[string]interface{}
+	_innerData interface{}
+}
 
 func (this *QueryData) Size(size int) *QueryData {
-	this.Put("size", size)
+	this._outerData["size"] = size
 
 	return this
 }
 
 func (this *QueryData) From(from int) *QueryData {
-	this.Put("from", from)
+	this._outerData["from"] = from
 
 	return this
 }
 
 func (this *QueryData) Type(t string) *QueryData {
-	this.Put("type", t)
+	this._outerData["type"] = t
 
 	return this
 }
 
-func (this *QueryData) Put(key string, value interface{}) *QueryData {
-	m := *this
-	m[key] = value
+func (this *QueryData) Set(value interface{}) *QueryData {
+	this._innerData = value
 
 	return this
+}
+
+func (this *QueryData) MarshalJSON() ([]byte, error) {
+	this._outerData["query"] = map[string]interface{}{
+		this._type: this._innerData,
+	}
+
+	return json.Marshal(this._outerData)
 }
