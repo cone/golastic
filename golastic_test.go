@@ -10,14 +10,16 @@ func TestGolastic_Find(t *testing.T) {
 		Error(t, err)
 	}
 
-	resultItem, err := golastic.From("test", "products").Find("1")
+	resultItem, err := golastic.From("test", "product").Find("1")
 	if err != nil {
 		t.Error("An error has ocurred: " + err.Error())
 	}
 
 	AssertEqualString(t, resultItem.Index, "test")
-	AssertEqualString(t, resultItem.Type, "products")
+	AssertEqualString(t, resultItem.Type, "product")
 	AssertEqualString(t, resultItem.Id, "1")
+	AssertEqualInt(t, resultItem.Version, 1)
+	AssertEqualBool(t, resultItem.Found, true)
 }
 
 func TestGolastic_Exec(t *testing.T) {
@@ -26,7 +28,7 @@ func TestGolastic_Exec(t *testing.T) {
 		Error(t, err)
 	}
 
-	result, err := golastic.From("test", "products").Exec(Query("match_all"))
+	result, err := golastic.From("test", "product").Exec(Query("match_all"))
 	if err != nil {
 		t.Error("An error has ocurred: " + err.Error())
 	}
