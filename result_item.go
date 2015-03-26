@@ -1,5 +1,7 @@
 package golastic
 
+import "encoding/json"
+
 type ResultItem struct {
 	Index   string      `json:"_index"`
 	Type    string      `json:"_type"`
@@ -8,4 +10,13 @@ type ResultItem struct {
 	Found   bool        `json:"found"`
 	Source  interface{} `json:"_source"`
 	Created bool        `json:"created"`
+}
+
+func (this *ResultItem) Scan(i interface{}) error {
+	sourceBytes, err := json.Marshal(this.Source)
+	if err != nil {
+		return err
+	}
+
+	return json.Unmarshal(sourceBytes, i)
 }

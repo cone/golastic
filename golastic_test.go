@@ -20,18 +20,19 @@ func TestGolastic_Find(t *testing.T) {
 	AssertEqualString(t, resultItem.Id, "1")
 }
 
-//func TestGolastic_Exec(t *testing.T) {
-//golastic, err := New("http://localhost:9200")
-//if err != nil {
-//Error(t, err)
-//}
+func TestGolastic_Exec(t *testing.T) {
+	golastic, err := New("http://localhost:9200")
+	if err != nil {
+		Error(t, err)
+	}
 
-//resultItem, err := golastic.Exec(Query("match"))
-//if err != nil {
-//t.Error("An error has ocurred: " + err.Error())
-//}
+	result, err := golastic.From("test", "products").Exec(Query("match_all"))
+	if err != nil {
+		t.Error("An error has ocurred: " + err.Error())
+	}
 
-//AssertEqualString(t, resultItem.Index, "test")
-//AssertEqualString(t, resultItem.Type, "products")
-//AssertEqualString(t, resultItem.Id, "1")
-//}
+	if len(result.Hits.Hits) < 5 {
+		t.Error("Wrong number of hits")
+	}
+
+}

@@ -21,14 +21,21 @@ func (this *Reader) Exec(query *QueryData) (*Result, error) {
 		return nil, err
 	}
 
-	responseBytes, err := this.requester.Post(this.url, queryBytes)
+	urlStr := this.url + "/_search"
+
+	responseBytes, err := this.requester.Post(urlStr, queryBytes)
 	if err != nil {
 		return nil, err
 	}
 
 	result := &Result{}
 
-	return result, this.getResponse(responseBytes, result)
+	err = this.getResponse(responseBytes, result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 func (this *Reader) Find(id string) (*ResultItem, error) {

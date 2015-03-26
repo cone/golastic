@@ -64,3 +64,8 @@ func (this *FakeRequester) Put(url string, b []byte) ([]byte, error) {
 func (this *FakeRequester) Delete(url string) ([]byte, error) {
 	return []byte{}, nil
 }
+
+type TestProduct struct {
+	Id   int    `json:"id"`
+	Name string `json:"name"`
+}
