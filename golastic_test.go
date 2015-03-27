@@ -19,7 +19,6 @@ func TestGolastic_Find(t *testing.T) {
 	AssertEqualString(t, resultItem.Type, "product")
 	AssertEqualString(t, resultItem.Id, "1")
 	AssertEqualInt(t, resultItem.Version, 1)
-	AssertEqualBool(t, resultItem.Found, true)
 }
 
 func TestGolastic_Exec(t *testing.T) {
@@ -33,8 +32,10 @@ func TestGolastic_Exec(t *testing.T) {
 		t.Error("An error has ocurred: " + err.Error())
 	}
 
-	if len(result.Hits.Hits) < 5 {
-		t.Error("Wrong number of hits")
+	totalHits := len(result.Hits.Hits)
+
+	if totalHits < 5 {
+		t.Errorf("Wrong number of hits: %d\n", totalHits)
 	}
 
 }

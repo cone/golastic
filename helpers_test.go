@@ -34,11 +34,18 @@ func mismatchError(t *testing.T, a, b interface{}) {
 	t.Errorf("Mismatch.\n%s is not equal to %s\n", a, b)
 }
 
+type FakeRequesterCallback func([]byte, error) ([]byte, error)
+
 type FakeRequester struct {
 	GetResponse  []byte
 	PostResponse []byte
 	GetError     error
 	PostError    error
+	PutFunction  FakeRequesterCallback
+}
+
+func (this *FakeRequester) SetPostCallback(function FakeRequesterCallback) {
+	this.PutFunction = function
 }
 
 func (this *FakeRequester) Post(url string, b []byte) ([]byte, error) {
@@ -58,6 +65,10 @@ func (this *FakeRequester) Get(url string) ([]byte, error) {
 }
 
 func (this *FakeRequester) Put(url string, b []byte) ([]byte, error) {
+	if this.PutFunction != nil {
+		return this.PutFunction(b, nil)
+	}
+
 	return []byte{}, nil
 }
 

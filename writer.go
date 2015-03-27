@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"sync"
 )
 
 const (
@@ -17,14 +18,16 @@ const (
 
 func NewWriter(requester Requester) *Writer {
 	return &Writer{
-		requester: requester,
+		requester:   requester,
+		chunkLength: 50,
 	}
 }
 
 type Writer struct {
-	requester Requester
-	url       string
-	errors    []error
+	requester   Requester
+	url         string
+	errors      []error
+	chunkLength int
 }
 
 func (this *Writer) Index(param interface{}) ([]byte, error) {
@@ -59,41 +62,68 @@ func (this *Writer) Delete(id string) ([]byte, error) {
 	return this.requester.Delete(urlStr)
 }
 
-func (this *Writer) Bulk(action string, param interface{}) []byte {
+func (this *Writer) Bulk(action string, param interface{}) []error {
 	v := reflect.ValueOf(param)
 	k := v.Kind()
-	var b []byte
-	var err error
-	this.errors = []error{}
 
 	if k == reflect.Array || k == reflect.Slice {
-		b = this.processBulk(action, v, param)
+		this.processBulk(action, v, param)
 	} else {
-		b, err = this.processItem(action, param)
-		if err != nil {
-			this.errors = append(this.errors, err)
-		}
+		this.Index(param)
 	}
 
-	return b
+	return this.errors
 }
 
-func (this *Writer) processBulk(action string, v reflect.Value, param interface{}) []byte {
-	buffer := bytes.Buffer{}
+func (this *Writer) processBulk(action string, v reflect.Value, param interface{}) {
+	chunk := bytes.Buffer{}
+	count := 0
+	c := make(chan error)
+	var wg sync.WaitGroup
+
+	this.errors = []error{}
+
+	go func() {
+		for err := range c {
+			this.appendError(err)
+		}
+	}()
 
 	for i := 0; i < v.Len(); i++ {
-		pBytes, err := this.processItem(action, v.Index(i).Interface())
-		if err != nil {
-			this.errors = append(this.errors, err)
-			continue
+		if count >= this.chunkLength {
+			count = 0
+
+			wg.Add(1)
+
+			go func(body []byte, chn chan error) {
+				this.sendChunk(body, c)
+				wg.Done()
+			}(chunk.Bytes(), c)
+
+			chunk.Reset()
 		}
-		buffer.Write(pBytes)
+
+		count++
+
+		itemBytes, err := this.createItemJsonBytes(action, v.Index(i).Interface())
+		if err != nil {
+			this.appendError(err)
+		}
+
+		chunk.Write(itemBytes)
 	}
 
-	return buffer.Bytes()
+	wg.Wait()
 }
 
-func (this *Writer) processItem(action string, param interface{}) ([]byte, error) {
+func (this *Writer) sendChunk(body []byte, c chan error) {
+	_, err := this.requester.Put(this.url, body)
+	if err != nil {
+		c <- err
+	}
+}
+
+func (this *Writer) createItemJsonBytes(action string, param interface{}) ([]byte, error) {
 	id := uuid.New()
 
 	buffer := bytes.Buffer{}
@@ -109,4 +139,8 @@ func (this *Writer) processItem(action string, param interface{}) ([]byte, error
 	buffer.WriteRune('\n')
 
 	return buffer.Bytes(), nil
+}
+
+func (this *Writer) appendError(err error) {
+	this.errors = append(this.errors, err)
 }
