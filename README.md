@@ -12,6 +12,10 @@ Go library to consume the elastic search API
 Simply execute the following command
 
     go get github.com/cone/golastic.git
+    
+Then you can import the project in your code
+
+    import "github.com/cone/golastic"
 
 ###Dependencies
 
@@ -42,6 +46,12 @@ It allows you to specify the Index. For example, you can use it to
 delete an index
 
 	  _, err = golastic.Index("test").DeleteDoc("")
+	 
+###Type
+
+It allows you to specify the Type after you sepcifed an index
+
+	_, err = golastic.Index("test").Type("product").Find("1")
 
 ###Find
 
