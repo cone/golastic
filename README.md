@@ -1,6 +1,7 @@
 # golastic
 
-[![Build Status](https://travis-ci.org/cone/golastic.svg?branch=master)](https://travis-ci.org/cone/golastic)
+[![Build Status](https://drone.io/github.com/cone/golastic/status.png)](https://drone.io/github.com/cone/golastic/latest)
+[![views](https://sourcegraph.com/api/repos/github.com/cone/golastic/.counters/views.svg)](https://sourcegraph.com/github.com/cone/golastic)
 
 Go library to consume the elastic search API
 
