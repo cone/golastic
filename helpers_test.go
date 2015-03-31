@@ -1,6 +1,9 @@
 package golastic
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func AssertEqualString(t *testing.T, a, b string) {
 	if a != b {
@@ -23,6 +26,12 @@ func AssertEqualInt(t *testing.T, a, b int) {
 func AssertEqualBool(t *testing.T, a, b bool) {
 	if a != b {
 		mismatchError(t, a, b)
+	}
+}
+
+func AssertContainsSubstring(t *testing.T, a, b string) {
+	if !strings.Contains(a, b) {
+		t.Errorf("Mismatch.\n%s doesn't contain %s\n", a, b)
 	}
 }
 

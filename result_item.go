@@ -10,6 +10,8 @@ type ResultItem struct {
 	Found   bool        `json:"found"`
 	Source  interface{} `json:"_source"`
 	Created bool        `json:"created"`
+	Status  int         `json:"status"`
+	Error   string      `json:"error"`
 }
 
 func (this *ResultItem) Scan(i interface{}) error {

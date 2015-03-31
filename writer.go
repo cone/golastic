@@ -1,19 +1,13 @@
 package golastic
 
 import (
-	"bytes"
-	"code.google.com/p/go-uuid/uuid"
+	//"bytes"
+	//"code.google.com/p/go-uuid/uuid"
 	"encoding/json"
-	"fmt"
-	"reflect"
-	"sync"
-)
-
-const (
-	indexer_tmpl  = `{"%s":{"_id":"%s"}}`
-	INDEX_ACTION  = "index"
-	DELETE_ACTION = "delete"
-	UPDATE_ACTION = "update"
+	//"errors"
+	//"fmt"
+	//"reflect"
+	//"sync"
 )
 
 func NewWriter(requester Requester) *Writer {
@@ -62,85 +56,102 @@ func (this *Writer) Delete(id string) ([]byte, error) {
 	return this.requester.Delete(urlStr)
 }
 
-func (this *Writer) Bulk(action string, param interface{}) []error {
-	v := reflect.ValueOf(param)
-	k := v.Kind()
+//func (this *Writer) Bulk(action string, param interface{}) []error {
+//v := reflect.ValueOf(param)
+//k := v.Kind()
 
-	if k == reflect.Array || k == reflect.Slice {
-		this.processBulk(action, v, param)
-	} else {
-		this.Index(param)
-	}
+//if k == reflect.Array || k == reflect.Slice {
+//this.processBulk(action, v, param)
+//} else {
+//this.Index(param)
+//}
 
-	return this.errors
-}
+//return this.errors
+//}
 
-func (this *Writer) processBulk(action string, v reflect.Value, param interface{}) {
-	chunk := bytes.Buffer{}
-	count := 0
-	c := make(chan error)
-	var wg sync.WaitGroup
+//func (this *Writer) processBulk(action string, v reflect.Value, param interface{}) {
+//chunk := bytes.Buffer{}
+//count := 0
+//c := make(chan error)
+//var wg sync.WaitGroup
 
-	this.errors = []error{}
+//this.errors = []error{}
 
-	go func() {
-		for err := range c {
-			this.appendError(err)
-		}
-	}()
+//go func() {
+//for err := range c {
+//this.appendError(err)
+//}
+//}()
 
-	for i := 0; i < v.Len(); i++ {
-		if count >= this.chunkLength {
-			count = 0
+//for i := 0; i < v.Len(); i++ {
+//if count >= this.chunkLength || (i+1) == v.Len() {
+//count = 0
 
-			wg.Add(1)
+//wg.Add(1)
 
-			go func(body []byte, chn chan error) {
-				this.sendChunk(body, c)
-				wg.Done()
-			}(chunk.Bytes(), c)
+//go func(action string, body []byte, chn chan error) {
+//this.sendChunk(action, body, c)
+//wg.Done()
+//}(action, chunk.Bytes(), c)
 
-			chunk.Reset()
-		}
+//chunk.Reset()
+//}
 
-		count++
+//count++
 
-		itemBytes, err := this.createItemJsonBytes(action, v.Index(i).Interface())
-		if err != nil {
-			this.appendError(err)
-		}
+//itemBytes, err := this.createItemJsonBytes(action, v.Index(i).Interface())
+//if err != nil {
+//this.appendError(err)
+//}
 
-		chunk.Write(itemBytes)
-	}
+//chunk.Write(itemBytes)
+//}
 
-	wg.Wait()
-}
+//wg.Wait()
+//}
 
-func (this *Writer) sendChunk(body []byte, c chan error) {
-	_, err := this.requester.Put(this.url, body)
-	if err != nil {
-		c <- err
-	}
-}
+//func (this *Writer) sendChunk(action string, body []byte, c chan error) {
+//urlStr := this.url + "/_bulk"
+//res, err := this.requester.Post(urlStr, body)
+//if err != nil {
+//c <- err
+//}
 
-func (this *Writer) createItemJsonBytes(action string, param interface{}) ([]byte, error) {
-	id := uuid.New()
+//result := &Result{}
+//err = json.Unmarshal(res, result)
+//if err != nil {
+//return
+//}
 
-	buffer := bytes.Buffer{}
-	buffer.WriteString(fmt.Sprintf(indexer_tmpl, action, id))
+//if result.Errors {
+//for _, m := range result.Items {
+//item := m[action]
 
-	paramBytes, err := json.Marshal(param)
-	if err != nil {
-		return []byte{}, err
-	}
+//if item.Error != "" {
+//c <- errors.New(item.Error)
+//}
+//}
+//}
+//}
 
-	buffer.WriteRune('\n')
-	buffer.WriteString(string(paramBytes))
-	buffer.WriteRune('\n')
+//func (this *Writer) createItemJsonBytes(action string, param interface{}) ([]byte, error) {
+//id := uuid.New()
 
-	return buffer.Bytes(), nil
-}
+//buffer := bytes.Buffer{}
+//buffer.WriteString(fmt.Sprintf(indexer_tmpl, action, id))
 
-func (this *Writer) appendError(err error) {
-	this.errors = append(this.errors, err)
-}
+//paramBytes, err := json.Marshal(param)
+//if err != nil {
+//return []byte{}, err
+//}
+
+//buffer.WriteRune('\n')
+//buffer.WriteString(string(paramBytes))
+//buffer.WriteRune('\n')
+
+//return buffer.Bytes(), nil
+//}
+
+//func (this *Writer) appendError(err error) {
+//this.errors = append(this.errors, err)
+//}

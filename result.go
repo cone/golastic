@@ -8,10 +8,12 @@ import (
 )
 
 type Result struct {
-	Took     int       `json:"took"`
-	TimedOut bool      `json:"timed_out"`
-	Shards   ShardData `json:"_shards"`
-	Hits     HitsData  `json:"hits"`
+	Took     int                     `json:"took"`
+	TimedOut bool                    `json:"timed_out"`
+	Shards   ShardData               `json:"_shards"`
+	Hits     HitsData                `json:"hits"`
+	Errors   bool                    `json:"errors"`
+	Items    []map[string]ResultItem `json:"items"`
 }
 
 type ShardData struct {
