@@ -1,13 +1,10 @@
 package golastic
 
 import (
-	//"bytes"
-	//"code.google.com/p/go-uuid/uuid"
 	"encoding/json"
-	//"errors"
-	//"fmt"
-	//"reflect"
-	//"sync"
+	"errors"
+	"fmt"
+	"sync"
 )
 
 func NewWriter(requester Requester) *Writer {
@@ -20,7 +17,6 @@ func NewWriter(requester Requester) *Writer {
 type Writer struct {
 	requester   Requester
 	url         string
-	errors      []error
 	chunkLength int
 }
 
@@ -56,102 +52,72 @@ func (this *Writer) Delete(id string) ([]byte, error) {
 	return this.requester.Delete(urlStr)
 }
 
-//func (this *Writer) Bulk(action string, param interface{}) []error {
-//v := reflect.ValueOf(param)
-//k := v.Kind()
+func (this *Writer) Bulk(doc *BulkDoc) []error {
+	c := make(chan error)
+	errors := []error{}
+	var wg sync.WaitGroup
 
-//if k == reflect.Array || k == reflect.Slice {
-//this.processBulk(action, v, param)
-//} else {
-//this.Index(param)
-//}
+	go func() {
+		for err := range c {
+			errors = append(errors, err)
+		}
+	}()
 
-//return this.errors
-//}
+	ln := doc.Len()
+	from := 0
+	to := this.chunkLength
 
-//func (this *Writer) processBulk(action string, v reflect.Value, param interface{}) {
-//chunk := bytes.Buffer{}
-//count := 0
-//c := make(chan error)
-//var wg sync.WaitGroup
+	for {
 
-//this.errors = []error{}
+		if from >= ln {
+			break
+		}
 
-//go func() {
-//for err := range c {
-//this.appendError(err)
-//}
-//}()
+		chunk, err := doc.Read(from, to)
+		if err != nil {
+			c <- err
+			continue
+		}
 
-//for i := 0; i < v.Len(); i++ {
-//if count >= this.chunkLength || (i+1) == v.Len() {
-//count = 0
+		wg.Add(1)
 
-//wg.Add(1)
+		go func(chunk []byte) {
 
-//go func(action string, body []byte, chn chan error) {
-//this.sendChunk(action, body, c)
-//wg.Done()
-//}(action, chunk.Bytes(), c)
+			this.sendChunk(chunk, c)
+			wg.Done()
 
-//chunk.Reset()
-//}
+		}(chunk)
 
-//count++
+		from = from + this.chunkLength
+		to = to + this.chunkLength
 
-//itemBytes, err := this.createItemJsonBytes(action, v.Index(i).Interface())
-//if err != nil {
-//this.appendError(err)
-//}
+	}
 
-//chunk.Write(itemBytes)
-//}
+	wg.Wait()
 
-//wg.Wait()
-//}
+	return errors
+}
 
-//func (this *Writer) sendChunk(action string, body []byte, c chan error) {
-//urlStr := this.url + "/_bulk"
-//res, err := this.requester.Post(urlStr, body)
-//if err != nil {
-//c <- err
-//}
+func (this *Writer) sendChunk(body []byte, c chan error) {
+	urlStr := this.url + "/_bulk"
+	res, err := this.requester.Post(urlStr, body)
+	if err != nil {
+		c <- err
+	}
 
-//result := &Result{}
-//err = json.Unmarshal(res, result)
-//if err != nil {
-//return
-//}
+	result := &Result{}
+	err = json.Unmarshal(res, result)
+	if err != nil {
+		return
+	}
 
-//if result.Errors {
-//for _, m := range result.Items {
-//item := m[action]
-
-//if item.Error != "" {
-//c <- errors.New(item.Error)
-//}
-//}
-//}
-//}
-
-//func (this *Writer) createItemJsonBytes(action string, param interface{}) ([]byte, error) {
-//id := uuid.New()
-
-//buffer := bytes.Buffer{}
-//buffer.WriteString(fmt.Sprintf(indexer_tmpl, action, id))
-
-//paramBytes, err := json.Marshal(param)
-//if err != nil {
-//return []byte{}, err
-//}
-
-//buffer.WriteRune('\n')
-//buffer.WriteString(string(paramBytes))
-//buffer.WriteRune('\n')
-
-//return buffer.Bytes(), nil
-//}
-
-//func (this *Writer) appendError(err error) {
-//this.errors = append(this.errors, err)
-//}
+	if result.Errors {
+		for _, m := range result.Items {
+			for action, item := range m {
+				if item.Error != "" {
+					c <- errors.New(fmt.Sprintf("Error for %s action: %s", action, item.Error))
+				}
+			}
+		}
+	}
+}

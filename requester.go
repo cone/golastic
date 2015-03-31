@@ -5,4 +5,5 @@ type Requester interface {
 	Get(string) ([]byte, error)
 	Put(string, []byte) ([]byte, error)
 	Delete(string) ([]byte, error)
+	DeleteWithBody(string, []byte) ([]byte, error)
 }

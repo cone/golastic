@@ -24,6 +24,10 @@ func (this *Interactor) Put(url string, body []byte) ([]byte, error) {
 	return this.withBody("PUT", url, body)
 }
 
+func (this *Interactor) DeleteWithBody(url string, body []byte) ([]byte, error) {
+	return this.withBody("DELETE", url, body)
+}
+
 func (this *Interactor) withBody(method, url string, body []byte) ([]byte, error) {
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(body))
 	if err != nil {

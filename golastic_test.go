@@ -1,6 +1,8 @@
 package golastic
 
 import (
+	"fmt"
+	"strconv"
 	"testing"
 )
 
@@ -27,7 +29,7 @@ func TestGolastic_Exec(t *testing.T) {
 		Error(t, err)
 	}
 
-	result, err := golastic.From("test", "product").Exec(Query("match_all"))
+	result, err := golastic.From("test", "product").Exec("", Query("match_all"))
 	if err != nil {
 		t.Error("An error has ocurred: " + err.Error())
 	}
@@ -40,41 +42,42 @@ func TestGolastic_Exec(t *testing.T) {
 
 }
 
-//func TestGolastic_Bulk(t *testing.T) {
-//golastic, err := New("http://localhost:9200")
-//if err != nil {
-//Error(t, err)
-//}
+func TestGolastic_Bulk(t *testing.T) {
+	golastic, err := New("http://localhost:9200")
+	if err != nil {
+		Error(t, err)
+	}
 
-//errs := golastic.From("test", "words").Bulk(INDEX_ACTION, []TestProduct{{1, "Hello"}})
-//if len(errs) > 0 {
-//t.Error("An error has ocurred: " + errs[0].Error())
-//}
+	b := Bulk()
 
-//result, err := golastic.From("test", "product").Exec(Query("match_all"))
-//if err != nil {
-//t.Error("An error has ocurred: " + err.Error())
-//}
+	for i := 1; i <= 10; i++ {
+		b.Index(strconv.Itoa(i), TestProduct{i, fmt.Sprintf("Product %d", i)})
+	}
 
-//totalHits := len(result.Hits.Hits)
+	errs := golastic.From("test", "words").Bulk(b)
+	if len(errs) > 0 {
+		t.Error("An error has ocurred: " + errs[0].Error())
+	}
 
-//if totalHits < 2 {
-//t.Errorf("Wrong number of hits: %d\n", totalHits)
-//}
+	result, err := golastic.From("test", "product").Exec(POST_METHOD, Query("match_all"))
+	if err != nil {
+		t.Error("An error has ocurred: " + err.Error())
+	}
 
-//errs = golastic.From("test", "words").Bulk(DELETE_ACTION, []TestProduct{{1, "Hello"}, {2, "World"}})
-//if len(errs) > 0 {
-//t.Error("An error has ocurred: " + errs[0].Error())
-//}
+	totalHits := len(result.Hits.Hits)
 
-//result, err = golastic.From("test", "words").Exec(Query("match_all"))
-//if err != nil {
-//t.Error("An error has ocurred: " + err.Error())
-//}
+	if totalHits < 2 {
+		t.Errorf("Wrong number of hits: %d\n", totalHits)
+	}
 
-//totalHits = len(result.Hits.Hits)
+	result, err = golastic.From("test", "words").Exec(DELETE_METHOD, Query("match_all"))
+	if err != nil {
+		t.Error("An error has ocurred: " + err.Error())
+	}
 
-//if totalHits > 0 {
-//t.Errorf("Wrong number of hits: %d\n", totalHits)
-//}
-//}
+	totalHits = len(result.Hits.Hits)
+
+	if totalHits > 0 {
+		t.Errorf("Wrong number of hits: %d\n", totalHits)
+	}
+}

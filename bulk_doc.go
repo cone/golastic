@@ -23,22 +23,23 @@ func Bulk() *BulkDoc {
 }
 
 type BulkDoc struct {
-	Data [][]byte
+	Data    [][]byte
+	_errors []error
 }
 
-func (this *BulkDoc) Index(id string, param interface{}) error {
+func (this *BulkDoc) Index(id string, param interface{}) *BulkDoc {
 	return this.Add(INDEX_ACTION, id, param)
 }
 
-func (this *BulkDoc) Delete(id string, param interface{}) error {
+func (this *BulkDoc) Delete(id string, param interface{}) *BulkDoc {
 	return this.Add(DELETE_ACTION, id, param)
 }
 
-func (this *BulkDoc) Update(id string, param interface{}) error {
+func (this *BulkDoc) Update(id string, param interface{}) *BulkDoc {
 	return this.Add(UPDATE_ACTION, id, param)
 }
 
-func (this *BulkDoc) Add(action string, id string, param interface{}) error {
+func (this *BulkDoc) Add(action string, id string, param interface{}) *BulkDoc {
 	if id == "" {
 		id = uuid.New()
 	}
@@ -48,7 +49,7 @@ func (this *BulkDoc) Add(action string, id string, param interface{}) error {
 
 	paramBytes, err := json.Marshal(param)
 	if err != nil {
-		return err
+		this._errors = append(this._errors, err)
 	}
 
 	buffer.WriteRune('\n')
@@ -57,7 +58,7 @@ func (this *BulkDoc) Add(action string, id string, param interface{}) error {
 
 	this.Data = append(this.Data, buffer.Bytes())
 
-	return nil
+	return this
 }
 
 func (this *BulkDoc) Len() int {
@@ -82,4 +83,8 @@ func (this *BulkDoc) Read(from, to int) ([]byte, error) {
 	}
 
 	return buffer.Bytes(), nil
+}
+
+func (this *BulkDoc) Errors() []error {
+	return this._errors
 }

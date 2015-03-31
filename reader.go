@@ -2,6 +2,12 @@ package golastic
 
 import (
 	"encoding/json"
+	"strings"
+)
+
+const (
+	POST_METHOD   = "post"
+	DELETE_METHOD = "delete"
 )
 
 func NewReader(requester Requester) *Reader {
@@ -15,7 +21,11 @@ type Reader struct {
 	url       string
 }
 
-func (this *Reader) Exec(query *QueryData) (*Result, error) {
+func (this *Reader) Exec(method string, query *QueryData) (*Result, error) {
+	if strings.Trim(method, " ") == "" {
+		method = POST_METHOD
+	}
+
 	queryBytes, err := json.Marshal(query)
 	if err != nil {
 		return nil, err
@@ -23,7 +33,14 @@ func (this *Reader) Exec(query *QueryData) (*Result, error) {
 
 	urlStr := this.url + "/_search"
 
-	responseBytes, err := this.requester.Post(urlStr, queryBytes)
+	var responseBytes []byte
+
+	if method == DELETE_METHOD {
+		responseBytes, err = this.requester.DeleteWithBody(urlStr, queryBytes)
+	} else {
+		responseBytes, err = this.requester.Post(urlStr, queryBytes)
+	}
+
 	if err != nil {
 		return nil, err
 	}

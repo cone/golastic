@@ -51,15 +51,16 @@ type FakeRequester struct {
 	GetError     error
 	PostError    error
 	PutFunction  FakeRequesterCallback
-}
-
-func (this *FakeRequester) SetPostCallback(function FakeRequesterCallback) {
-	this.PutFunction = function
+	PostFunction FakeRequesterCallback
 }
 
 func (this *FakeRequester) Post(url string, b []byte) ([]byte, error) {
 	if this.PostError != nil {
 		return []byte{}, this.PostError
+	}
+
+	if this.PostFunction != nil {
+		return this.PostFunction(b, nil)
 	}
 
 	return this.PostResponse, nil
@@ -82,6 +83,10 @@ func (this *FakeRequester) Put(url string, b []byte) ([]byte, error) {
 }
 
 func (this *FakeRequester) Delete(url string) ([]byte, error) {
+	return []byte{}, nil
+}
+
+func (this *FakeRequester) DeleteWithBody(url string, b []byte) ([]byte, error) {
 	return []byte{}, nil
 }
 
