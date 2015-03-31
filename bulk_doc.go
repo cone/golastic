@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	//"reflect"
-	//"sync"
 
 	"code.google.com/p/go-uuid/uuid"
 )

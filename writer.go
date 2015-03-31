@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
+
+	"code.google.com/p/go-uuid/uuid"
 )
 
 func NewWriter(requester Requester) *Writer {
@@ -20,27 +23,43 @@ type Writer struct {
 	chunkLength int
 }
 
-func (this *Writer) Index(param interface{}) ([]byte, error) {
+func (this *Writer) IndexDoc(id string, param interface{}) (*ResultItem, error) {
 	paramBytes, err := json.Marshal(param)
 	if err != nil {
-		return []byte{}, err
+		return nil, err
 	}
 
-	return this.requester.Put(this.url, paramBytes)
-}
-
-func (this *Writer) Update(id string, param interface{}) ([]byte, error) {
-	paramBytes, err := json.Marshal(param)
-	if err != nil {
-		return []byte{}, err
+	if strings.Trim(id, " ") == "" {
+		id = uuid.New()
 	}
 
 	urlStr := this.url + "/" + id
 
-	return this.requester.Put(urlStr, paramBytes)
+	jsonBytes, err := this.requester.Put(urlStr, paramBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	return this.getResp(jsonBytes)
 }
 
-func (this *Writer) Delete(id string) ([]byte, error) {
+func (this *Writer) UpdateDoc(id string, param interface{}) (*ResultItem, error) {
+	paramBytes, err := json.Marshal(param)
+	if err != nil {
+		return nil, err
+	}
+
+	urlStr := this.url + "/" + id
+
+	jsonBytes, err := this.requester.Put(urlStr, paramBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	return this.getResp(jsonBytes)
+}
+
+func (this *Writer) DeleteDoc(id string) (*ResultItem, error) {
 	var urlStr string
 
 	if id != "" {
@@ -49,7 +68,12 @@ func (this *Writer) Delete(id string) ([]byte, error) {
 		urlStr = this.url
 	}
 
-	return this.requester.Delete(urlStr)
+	jsonBytes, err := this.requester.Delete(urlStr)
+	if err != nil {
+		return nil, err
+	}
+
+	return this.getResp(jsonBytes)
 }
 
 func (this *Writer) Bulk(doc *BulkDoc) []error {
@@ -120,4 +144,15 @@ func (this *Writer) sendChunk(body []byte, c chan error) {
 			}
 		}
 	}
+}
+
+func (this *Writer) getResp(responseBytes []byte) (*ResultItem, error) {
+	container := &ResultItem{}
+
+	err := json.Unmarshal(responseBytes, container)
+	if err != nil {
+		return nil, err
+	}
+
+	return container, nil
 }
