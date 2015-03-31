@@ -118,8 +118,6 @@ func TestGolastic_Index_Update_Delete(t *testing.T) {
 		Error(t, err)
 	}
 
-	AssertEqualBool(t, resultItem.Found, true)
-
 	err = resultItem.Scan(tp)
 	if err != nil {
 		Error(t, err)
