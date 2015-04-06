@@ -119,7 +119,7 @@ You can also pass a slice for query operations
 
     result.Scan(&products)
 
-##Querying
+##Queries
 
 The queries are executed using the ``Exec`` function. Aside the method
 (e.g. "post" or "delete" or "" to default to "post") you should specify
@@ -155,6 +155,22 @@ Or you can use the ``Item`` helper to achieve the same result as above
 
 More helpers for the queries will be added in the future.
 
+##Filters
+
+Filters are build in a similar way to Queries. Queries can contain filters
+
+	f := Filter("and").Set([]interface{}{
+		Item().Put(
+			"range",
+			Item().Put(
+				"postDate",
+				Item().
+					Put("from", "2010-03-01").
+					Put("to", "2010-04-01"),
+			),
+		),
+	})
+	
 ## Contributing
 
 1. Create your feature branch (`git checkout -b feature/my-new-feature`)
